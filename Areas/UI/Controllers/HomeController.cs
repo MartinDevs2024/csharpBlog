@@ -27,6 +27,11 @@ namespace csharpBlog.Areas.UI.Controllers
             return View();
         }
 
+        public IActionResult Contact() 
+        {
+            return View();
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Contact(ContactMe model)
