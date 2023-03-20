@@ -1,0 +1,14 @@
+{
+  "version": "1.0",
+  "defaultProvider": "cdnjs",
+  "libraries": [
+    {
+      "library": "tinymce@6.4.0",
+      "destination": "wwwroot/tinymce/"
+    },
+    {
+      "library": "Trumbowyg@2.27.3",
+      "destination": "wwwroot/Trumbowyg/"
+    }
+  ]
+}
