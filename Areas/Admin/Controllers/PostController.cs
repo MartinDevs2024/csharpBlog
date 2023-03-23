@@ -1,11 +1,14 @@
 ﻿using csharpBlog.Interfaces;
 using csharpBlog.Models;
+using csharpBlog.Utility;
 using csharpBlog.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace csharpBlog.Areas.Admin.Controllers
 {
     [Area("Admin")]
+    [Authorize(Roles =SD.Role_Admin)]
     public class PostController : Controller
     {
         private readonly IRepository _repo;
