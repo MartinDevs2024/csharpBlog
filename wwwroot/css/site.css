@@ -13,6 +13,35 @@
     9.Section
 */
 
+/* ==================
+    preloader 
+    =================
+*/
+.preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #fff;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spin {
+    height: 50px;
+    width: 50px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: rgba(163, 174, 229, 0.75) rgba(163, 174, 229, 0.75) rgba(163, 174, 229, 0.25) rgba(163, 174, 229, 0.25);
+    border-radius: 100%;
+    -webkit-animation: clockwise 1s linear infinite;
+    animation: clockwise 1s linear infinite;
+}
+
+
 
 html {
     font-size: 14px;

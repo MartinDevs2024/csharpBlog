@@ -9,6 +9,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//var connectionString = builder.Configuration.GetSection("pgSettings")["pgConnection"];
+
+
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -40,6 +43,13 @@ builder.Services.AddScoped<IFileManager, FileManager>();
 
 
 var app = builder.Build();
+
+/*var dataService = app.Services
+                     .CreateScope()
+                     .ServiceProvider
+                     .GetRequiredService<DataService>();
+*/
+//await dataService.ManageDataAsync();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
