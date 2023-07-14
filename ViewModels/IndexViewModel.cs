@@ -12,5 +12,6 @@ namespace csharpBlog.ViewModels
         public string Search { get; set; }
         public string OrderBy { get; set; }
         public IEnumerable<Post> Posts { get; set; }
+        public IEnumerable<int> Pages { get; internal set; }
     }
 }

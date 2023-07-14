@@ -1,7 +1,9 @@
 ﻿using csharpBlog.Data;
+using csharpBlog.Helpers;
 using csharpBlog.Interfaces;
 using csharpBlog.Models;
 using csharpBlog.Models.Comments;
+using csharpBlog.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace csharpBlog.Services
@@ -21,6 +23,47 @@ namespace csharpBlog.Services
         public List<Post> GetAllPosts()
         {
             return _context.Posts.ToList();
+        }
+
+        public IndexViewModel GetAllPosts(
+            int pageNumber, 
+            string category, 
+            string search)
+        {
+            Func<Post, bool> InCategory = (post) => { return post.Category.ToLower().Equals(category.ToLower()); };
+
+            int pageSize = 5;
+            int skipAmount = pageSize * (pageNumber - 1);
+
+            var query = _context.Posts.AsNoTracking().AsQueryable();
+
+            if (!String.IsNullOrEmpty(category))
+                query = query.Where(x => InCategory(x));
+
+            if (!String.IsNullOrEmpty(category))
+                query = query.Where(x => InCategory(x));
+
+            if (!String.IsNullOrEmpty(search))
+                query = query.Where(x => EF.Functions.Like(x.Title, $"%{search}%")
+                                    || EF.Functions.Like(x.Body, $"%{search}%")
+                                    || EF.Functions.Like(x.Description, $"%{search}%"));
+
+            int postsCount = query.Count();
+            int pageCount = (int)Math.Ceiling((double)postsCount / pageSize);
+
+            return new IndexViewModel
+            {
+                PageNumber = pageNumber,
+                PageCount = pageCount,
+                NextPage = postsCount > skipAmount + pageSize,
+                Pages = PageHelper.PageNumbers(pageNumber, pageCount).ToList(),
+                Category = category,
+                Search = search,
+                Posts = query
+                    .Skip(skipAmount)
+                    .Take(pageSize)
+                    .ToList()
+            };
         }
 
         public Post GetPost(int id)
@@ -54,5 +97,6 @@ namespace csharpBlog.Services
         {
             _context.SubComments.Add(comment);
         }
+
     }
 }
