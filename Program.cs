@@ -1,4 +1,5 @@
 using csharpBlog.Data;
+using csharpBlog.Helpers;
 using csharpBlog.Interfaces;
 using csharpBlog.Services;
 using csharpBlog.Utility;
@@ -8,9 +9,6 @@ using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//var connectionString = builder.Configuration.GetSection("pgSettings")["pgConnection"];
-
 
 // Add services to the container.
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -23,7 +21,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>().AddDefaultTokenProvid
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
-//Register a preconfigured instance of the MailSettings class
+// Register a preconfigured instance of the MailSettings class
 builder.Services.AddScoped<IEmailSender, EmailSender>();
 builder.Services.AddScoped<IBlogEmailSender, EmailService>();
 builder.Services.Configure<MailSettings>(builder.Configuration.GetSection("MailSettings"));
@@ -35,21 +33,15 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.AccessDeniedPath = $"/Identity/Account/AccessDenied";
 });
 
-//Register our Image Service
-builder.Services.AddScoped<IRepository,Repository>();
+// Register our Image Service
+builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<IFileManager, FileManager>();
-
-//Register the Slug Service
-
 
 var app = builder.Build();
 
-/*var dataService = app.Services
-                     .CreateScope()
-                     .ServiceProvider
-                     .GetRequiredService<DataService>();
-*/
-//await dataService.ManageDataAsync();
+// Seed Admin and Guest Users
+await SeedAdmin.InitializeAsync(app.Services, "admin@aol.com", "Admin123*");
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -59,7 +51,6 @@ if (app.Environment.IsDevelopment())
 else
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 

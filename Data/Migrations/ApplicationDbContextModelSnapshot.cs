@@ -7,7 +7,7 @@ using csharpBlog.Data;
 
 #nullable disable
 
-namespace csharpBlog.Migrations
+namespace csharpBlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
     partial class ApplicationDbContextModelSnapshot : ModelSnapshot

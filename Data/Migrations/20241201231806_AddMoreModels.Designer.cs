@@ -8,11 +8,11 @@ using csharpBlog.Data;
 
 #nullable disable
 
-namespace csharpBlog.Migrations
+namespace csharpBlog.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230322104810_AddModels")]
-    partial class AddModels
+    [Migration("20241201231806_AddMoreModels")]
+    partial class AddMoreModels
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
