@@ -34,7 +34,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 // Register our Image Service
-builder.Services.AddScoped<IRepository, Repository>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.AddScoped<IFileManager, FileManager>();
 
 var app = builder.Build();

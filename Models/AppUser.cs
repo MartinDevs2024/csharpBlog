@@ -1,10 +1,11 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using csharpBlog.Models.Comments;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace csharpBlog.Models
 {
-    public class ApplicationUser : IdentityUser
+    public class AppUser : IdentityUser
     {
         [Required]
         [StringLength(50, ErrorMessage = "The {0} needs to be at least {2} and no more than {1} characters long", MinimumLength = 3)]
@@ -13,5 +14,11 @@ namespace csharpBlog.Models
        
         [NotMapped]
         public string Role { get; set; }
+
+         // Navigation property for posts created by the user
+        public List<Post> Posts { get; set; } = new();
+
+        // Navigation property for comments made by the user
+        public List<MainComment> Comments { get; set; } = new();
     }
 }

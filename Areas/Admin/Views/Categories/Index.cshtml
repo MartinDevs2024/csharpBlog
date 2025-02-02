@@ -1,0 +1,31 @@
+﻿@model IEnumerable<csharpBlog.Models.Category>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<h2>Categories</h2>
+
+<a href="@Url.Action("Create", "Categories", new { area = "Admin" })" class="btn btn-primary">Create New Category</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr>
+                <td>@category.Name</td>
+                <td>
+                    <a href="@Url.Action("Details", "Categories", new { id = category.Id, area = "Admin" })" class="btn btn-info">Details</a>
+                    <a href="@Url.Action("Edit", "Categories", new { id = category.Id, area = "Admin" })" class="btn btn-warning">Edit</a>
+                    <a href="@Url.Action("Delete", "Categories", new { id = category.Id, area = "Admin" })" class="btn btn-danger">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

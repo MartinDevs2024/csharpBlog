@@ -2,103 +2,134 @@
 using csharpBlog.Models;
 using csharpBlog.Utility;
 using csharpBlog.ViewModels;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+
 
 namespace csharpBlog.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Authorize(Roles =SD.Role_Admin)]
+    [Authorize(Roles = SD.Role_Admin)]
     public class PostController : Controller
     {
-        private readonly IRepository _repo;
+        private readonly IUnitOfWork _unitOfWork;
         private readonly IFileManager _fileManager;
 
-        public PostController(IRepository repo, 
-            IFileManager fileManager)
+        public PostController(IUnitOfWork unitOfWork, IFileManager fileManager)
         {
-            _repo = repo;
+            _unitOfWork = unitOfWork;
             _fileManager = fileManager;
         }
+
         public IActionResult Index()
         {
-            var posts = _repo.GetAllPosts();
+            var posts = _unitOfWork.Post.GetAll();
             return View(posts);
         }
 
-        public IActionResult Details(int id)
+        public IActionResult Create()
         {
-            return View(_repo.GetPost(id));
-        }
-
-        [HttpGet]
-        public IActionResult Edit(int? id)
-        {
-            if (id == null)
-                return View(new PostViewModel());
-            else
+            var viewModel = new PostViewModel
             {
-                var post = _repo.GetPost((int)id);
-                return View(new PostViewModel
+                CategoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
                 {
-                    Id = post.Id,
-                    Title = post.Title,
-                    Body = post.Body,
-                    CurrentImage = post.Image,
-                    Description = post.Description,
-                    Category = post.Category,
-                    Tags = post.Tags
-                });
-            }
+                    Text = c.Name,
+                    Value = c.Id.ToString()
+                })
+            };
+            return View(viewModel);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(PostViewModel vm)
+        {
+            if (ModelState.IsValid)
+            {
+                var post = new Post
+                {
+                    Title = vm.Title,
+                    Body = vm.Body,
+                    Description = vm.Description,
+                    Tags = vm.Tags,
+                    CategoryId = vm.CategoryId,
+                    Image = vm.Image == null ? null : await _fileManager.SaveImage(vm.Image)
+                };
+
+                _unitOfWork.Post.Add(post);
+                _unitOfWork.Save();
+                return RedirectToAction(nameof(Index));
+            }
+            return View(vm);
+        }
+
+        public IActionResult Edit(int id)
+        {
+            var post = _unitOfWork.Post.GetFirstOrDefault(p => p.Id == id);
+            if (post == null)
+                return NotFound();
+
+            var viewModel = new PostViewModel
+            {
+                Id = post.Id,
+                Title = post.Title,
+                Body = post.Body,
+                Description = post.Description,
+                Tags = post.Tags,
+                CategoryId = post.CategoryId,
+                CurrentImage = post.Image,
+                CategoryList = _unitOfWork.Category.GetAll().Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString()
+                })
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(PostViewModel vm)
         {
-            var post = new Post
+            if (ModelState.IsValid)
             {
-                Id = vm.Id,
-                Title = vm.Title,
-                Body = vm.Body,
-                Description = vm.Description,
-                Category = vm.Category,
-                Tags = vm.Tags
+                var post = _unitOfWork.Post.GetFirstOrDefault(p => p.Id == vm.Id);
+                if (post == null)
+                    return NotFound();
 
-            };
-            if (vm.Image == null)
-            {
-                post.Image = vm.CurrentImage;
+                post.Title = vm.Title;
+                post.Body = vm.Body;
+                post.Description = vm.Description;
+                post.Tags = vm.Tags;
+                post.CategoryId = vm.CategoryId;
+                post.Image = vm.Image == null ? vm.CurrentImage : await _fileManager.SaveImage(vm.Image);
+
+                _unitOfWork.Post.Update(post);
+                _unitOfWork.Save();
+                return RedirectToAction(nameof(Index));
             }
-            else
-            {
-                post.Image = await _fileManager.SaveImage(vm.Image);
-
-            }
-
-            if (post.Id > 0)
-                _repo.UpdatePost(post);
-            else
-                _repo.AddPost(post);
-
-            if (await _repo.SaveChangeAsync())
-                return RedirectToAction("Index");
-            else
-                return View(vm);
-        }
-        [HttpGet]
-        public async Task<IActionResult> Remove(int id)
-        {
-            _repo.RemovePost(id);
-            await _repo.SaveChangeAsync();
-            return RedirectToAction("Index");
+            return View(vm);
         }
 
-        [HttpGet("/Image/{image}")]
-        [ResponseCache(CacheProfileName = "Monthly")]
-        public IActionResult Image(string image)
+        public IActionResult Delete(int id)
         {
-            var mine = image.Substring(image.LastIndexOf('.') + 1);
-            return new FileStreamResult(_fileManager.ImageStream(image), $"image/{mine}");
+            var post = _unitOfWork.Post.GetFirstOrDefault(p => p.Id == id);
+            if (post == null)
+                return NotFound();
+
+            _unitOfWork.Post.Remove(post);
+            _unitOfWork.Save();
+            return RedirectToAction(nameof(Index));
         }
     }
 }
+
+
+
+
+
+
+

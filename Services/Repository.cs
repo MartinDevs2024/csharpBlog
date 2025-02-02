@@ -1,102 +1,78 @@
 ﻿using csharpBlog.Data;
-using csharpBlog.Helpers;
 using csharpBlog.Interfaces;
-using csharpBlog.Models;
-using csharpBlog.Models.Comments;
-using csharpBlog.ViewModels;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace csharpBlog.Services
 {
-    public class Repository : IRepository
+    public class Repository<T> : IRepository<T> where T : class
     {
         private readonly ApplicationDbContext _context;
+        private readonly DbSet<T> _dbSet;
 
         public Repository(ApplicationDbContext context)
         {
             _context = context;
-        }
-        public void AddPost(Post post)
-        {
-            _context.Posts.Add(post);
-        }
-        public List<Post> GetAllPosts()
-        {
-            return _context.Posts.ToList();
+            _dbSet = _context.Set<T>();
         }
 
-        public IndexViewModel GetAllPosts(
-            int pageNumber, 
-            string category, 
-            string search)
+        // Get the first entity that matches the filter
+        public T GetFirstOrDefault(Expression<Func<T, bool>> filter, string? includeProperties = null, bool tracked = true)
         {
-            Func<Post, bool> InCategory = (post) => { return post.Category.ToLower().Equals(category.ToLower()); };
+            IQueryable<T> query = _dbSet;
 
-            int pageSize = 5;
-            int skipAmount = pageSize * (pageNumber - 1);
+            if (!tracked)
+                query = query.AsNoTracking(); // If not tracked, use AsNoTracking() to improve performance
 
-            var query = _context.Posts.AsNoTracking().AsQueryable();
+            if (filter != null)
+                query = query.Where(filter);
 
-            if (!String.IsNullOrEmpty(category))
-                query = query.Where(x => InCategory(x));
-
-            if (!String.IsNullOrEmpty(category))
-                query = query.Where(x => InCategory(x));
-
-            if (!String.IsNullOrEmpty(search))
-                query = query.Where(x => EF.Functions.Like(x.Title, $"%{search}%")
-                                    || EF.Functions.Like(x.Body, $"%{search}%")
-                                    || EF.Functions.Like(x.Description, $"%{search}%"));
-
-            int postsCount = query.Count();
-            int pageCount = (int)Math.Ceiling((double)postsCount / pageSize);
-
-            return new IndexViewModel
+            if (includeProperties != null)
             {
-                PageNumber = pageNumber,
-                PageCount = pageCount,
-                NextPage = postsCount > skipAmount + pageSize,
-                Pages = PageHelper.PageNumbers(pageNumber, pageCount).ToList(),
-                Category = category,
-                Search = search,
-                Posts = query
-                    .Skip(skipAmount)
-                    .Take(pageSize)
-                    .ToList()
-            };
-        }
-
-        public Post GetPost(int id)
-        {
-            return _context.Posts
-                .Include(p => p.MainComments)
-                .ThenInclude(m => m.SubComments)
-                .FirstOrDefault(p => p.Id == id);
-        }
-
-        public void RemovePost(int id)
-        {
-            _context.Posts.Remove(GetPost(id));
-        }
-
-        public void UpdatePost(Post post)
-        {
-            _context.Posts.Update(post);
-        }
-
-        public async Task<bool> SaveChangeAsync()
-        {
-            if (await _context.SaveChangesAsync() > 0)
-            {
-                return true;
+                foreach (var includeProperty in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
             }
-            return false;
+
+            return query.FirstOrDefault();
         }
 
-        public void AddSubComment(SubComment comment)
+        // Get all entities matching the filter
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>>? filter = null, string? includeProperties = null)
         {
-            _context.SubComments.Add(comment);
+            IQueryable<T> query = _dbSet;
+
+            if (filter != null)
+                query = query.Where(filter);
+
+            if (includeProperties != null)
+            {
+                foreach (var includeProperty in includeProperties.Split(',', StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(includeProperty);
+                }
+            }
+
+            return query.ToList();
         }
 
+        // Add a new entity
+        public void Add(T entity)
+        {
+            _dbSet.Add(entity);
+        }
+
+        // Remove an entity
+        public void Remove(T entity)
+        {
+            _dbSet.Remove(entity);
+        }
+
+        // Remove a range of entities
+        public void RemoveRange(IEnumerable<T> entity)
+        {
+            _dbSet.RemoveRange(entity);
+        }
     }
 }

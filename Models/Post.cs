@@ -1,4 +1,6 @@
-﻿using csharpBlog.Models.Comments;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using csharpBlog.Models.Comments;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 
 namespace csharpBlog.Models
 {
@@ -10,8 +12,18 @@ namespace csharpBlog.Models
         public string Image { get; set; } = "";
         public string Description { get; set; } = "";
         public string Tags { get; set; } = "";
-        public string Category { get; set; } = "";
         public DateTime Created { get; set; } = DateTime.Now;
-        public List<MainComment> MainComments { get; set; }
+
+        // Foreign Key for Category
+        public int CategoryId { get; set; }
+        [ForeignKey("CategoryId")]
+        [ValidateNever]
+        public Category Category { get; set; }
+
+        // Foreign Key for User
+        public string AppUserId { get; set; }
+        public AppUser AppUser { get; set; }
+
+        public List<MainComment> MainComments { get; set; } = new();
     }
 }

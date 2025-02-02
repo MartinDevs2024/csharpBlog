@@ -1,0 +1,14 @@
+﻿@model csharpBlog.Models.Category
+
+@{
+    ViewData["Title"] = "Category Details";
+}
+
+<h2>@Model.Name</h2>
+
+<div>
+    <h4>Name</h4>
+    <p>@Model.Name</p>
+</div>
+
+<a href="@Url.Action("Index", "Categories", new { area = "Admin" })" class="btn btn-secondary">Back to List</a>

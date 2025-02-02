@@ -1,4 +1,5 @@
 ﻿using csharpBlog.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Diagnostics.Metrics;
 
 namespace csharpBlog.ViewModels
@@ -13,5 +14,7 @@ namespace csharpBlog.ViewModels
         public string OrderBy { get; set; }
         public IEnumerable<Post> Posts { get; set; }
         public IEnumerable<int> Pages { get; internal set; }
+          // Add CategoryList property
+        public IEnumerable<SelectListItem> CategoryList { get; set; } //
     }
 }

@@ -1,6 +1,5 @@
 ﻿using csharpBlog.Interfaces;
 using csharpBlog.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace csharpBlog.Controllers
@@ -9,18 +8,18 @@ namespace csharpBlog.Controllers
     [ApiController]
     public class PostsController : ControllerBase
     {
-        private readonly IRepository _repo;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public PostsController(IRepository repo)
+        public PostsController(IUnitOfWork unitOfWork)
         {
-            _repo = repo;
+            _unitOfWork = unitOfWork;
         }
 
         // GET: api/Post
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Post>>> GetPosts()
         {
-            var posts =_repo.GetAllPosts();
+            var posts = _unitOfWork.Post.GetAll().ToList(); 
             return Ok(posts);
         }
     }
